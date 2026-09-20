@@ -2,7 +2,7 @@
 render_with_liquid: false
 sitemap: false
 ---
-# claude.md - Admin crazyweb3 (al-folio v1.x)
+# claude.md - Admin alfolioadmin (al-folio v1.x)
 
 > Leggi questo file PRIMA di toccare `admin/`. Aggiornalo a fine sessione (edit chirurgici, mai riscrivere tutto).
 >
@@ -120,9 +120,9 @@ Ogni volta che scrivi o modifichi codice in `admin/` o nei template del sito, **
 **Limite noto:** l'ora e' corretta dalla prima chiamata API in poi. Il login ne fa diverse prima di aprire l'editor, quindi in pratica e' sempre pronta. Se GitHub non risponde con `Date` si usa l'orologio del PC.
 
 ## 1. Progetto
-- Repo: `cialdecompatibili-netizen/crazyweb3` (branch `main`), sito: https://cialdecompatibili-netizen.github.io/crazyweb3/
+- Repo: `cialdecompatibili-netizen/alfolioadmin` (branch `main`), sito: https://cialdecompatibili-netizen.github.io/alfolioadmin/ (clonato da crazyweb3, che resta il repo di sviluppo originale)
 - Base: al-folio **v1.x VERGINE** (alshedivat), tema = gem `al_folio_core` (NON e' in repo: niente _layouts/_sass).
-- Locale: `C:\Users\mirco\Desktop\crazyweb3\`. Gem locale (sola lettura, per studiare): `C:\Ruby32-x64\lib\ruby\gems\3.2.0\gems\al_folio_core-1.0.15\`
+- Locale: `C:\Users\mirco\Desktop\alfolioadmin\`. Gem locale (sola lettura, per studiare): `C:\Ruby32-x64\lib\ruby\gems\3.2.0\gems\al_folio_core-1.0.15\`
 - Admin: `admin/index.html` + `admin/admin.js` + `admin/admin.css`. Zero librerie, zero build. Login = token GitHub incollato dall'utente, salvato SOLO in localStorage del browser. MAI scrivere un token nel repo (pubblico).
 
 ## 2. Deploy (importante)
@@ -131,7 +131,7 @@ Ogni volta che scrivi o modifichi codice in `admin/` o nei template del sito, **
 - `deploy.yml` parte solo se il push tocca: `assets/**`, `*.bib`, `*.html`, `*.js`, `*.liquid`, `**/*.md`, `**.yml`, Gemfile. Un push solo di `.css`/`.scss`/`.json` NON deploya.
 - Build ~1-2 min + propagazione Pages. Dopo: ricarica forzata (Ctrl+F5).
 - Verifica deploy: API `GET /repos/{o}/{r}/actions/runs` (workflow "Deploy site" -> conclusion success) poi "pages build and deployment".
-- Token per API da script: sta nel remote git di `C:\Users\mirco\Desktop\crazyweb\` (`git remote get-url origin`). Il remote di crazyweb3 NON lo ha.
+- Token per API da script: sta nel remote git di `C:\Users\mirco\Desktop\crazyweb\` (`git remote get-url origin`). Il remote di questo repo NON lo ha.
 - `admin/claude.md` viene pubblicato online (ok, non contiene segreti). Per nasconderlo aggiungi `admin/claude.md` a `exclude:` di `_config.yml`.
 
 ## 3. Struttura contenuti (tutto e' file .md con front matter YAML)
@@ -243,7 +243,7 @@ Campi `about.md`: `subtitle` (HTML ok), `profile.align/image/image_circular/more
 ## 5. Regole tecniche al-folio v1 (trappole)
 1. Layout/include/sass sono nella GEM. Nel nostro sito e' lecito fare override (shadow) ma solo se indispensabile. Override gia' presente: `_includes/footer.liquid` (bottoni flottanti, vedi sez. 7).
 2. `Gemfile` e `_config.yml` devono concordare sui plugin.
-3. `baseurl` = `/crazyweb3` (gia' impostato). Nell'admin costruire URL con `/crazyweb3/...`.
+3. `baseurl` = `/alfolioadmin` (gia' impostato). Nell'admin gli URL si costruiscono da `A.baseurl()`, mai scritti a mano.
 4. Tags nei post: stringa a spazi (`tags: a b c`). Categorie idem.
 5. `_news`/`_projects`/`_teachings`/`_books` sono collezioni dichiarate in `_config.yml -> collections:` (tutte `output: true`).
 6. YAML: attenzione a `:` nei titoli (quotare), date con fuso nelle news (`-0400`).
@@ -358,3 +358,6 @@ Dove finiscono i valori: `_data/modules/<slug>.yml`, piatto, una riga per campo.
 **Trappola registry:** `config_fields` e `roots` vengono copiati nel registry (`_data/modules_registry.yml`) all'INSTALLAZIONE. Un modulo installato prima di aggiungere `config_fields` al suo manifest non li ha: bisogna disinstallare e reinstallare, oppure aggiornare a mano la voce nel registry.
 **Trappola sitemap:** `site.documents` contiene anche i post, quindi va saltata la collezione `posts` (gia' coperta da `site.posts`) o ogni articolo compare 2 volte.
 Se scrivi un nuovo modulo: dichiara i campi in `config_fields` del `module.json` e leggili col default `| default:` nel template, cosi' funziona anche prima del primo salvataggio.
+
+## Origine di questo repo
+Creato il 2026-09-20 copiando crazyweb3 senza la cronologia git (un solo commit iniziale) e cambiando SOLO la riga baseurl di _config.yml, come da procedura di clonazione della sez. 0. I due repo sono INDIPENDENTI: una correzione fatta in uno NON arriva da sola nell'altro. Il log delle sessioni qui sotto e' quello ereditato da crazyweb3.
