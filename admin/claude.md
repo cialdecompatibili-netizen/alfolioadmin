@@ -119,6 +119,13 @@ Ogni volta che scrivi o modifichi codice in `admin/` o nei template del sito, **
 - Test rapido della logica: estrarre `serverNow`/`siteParts`/`now` e girarli con `node` simulando PC in ritardo/anticipo (8 casi: PC esatto, -3h, +1 giorno, inverno, mezzanotte, fuso errato, fuso vuoto).
 **Limite noto:** l'ora e' corretta dalla prima chiamata API in poi. Il login ne fa diverse prima di aprire l'editor, quindi in pratica e' sempre pronta. Se GitHub non risponde con `Date` si usa l'orologio del PC.
 
+
+### 0f. PIU' SITI SULLO STESSO DOMINIO (bug reale: crazyweb3 e alfolioadmin si scambiavano token e repo)
+Sessione 2026-09-20. Due siti GitHub Pages dello stesso utente (utente.github.io/sito-a/ e /sito-b/) hanno lo STESSO dominio, e il browser tiene localStorage PER DOMINIO. Con chiavi fisse (adm_tok, adm_repo) il secondo admin trovava token e repo del primo, mostrava i link Sito/Deploy del sito sbagliato e SCRIVEVA SUL REPO SBAGLIATO.
+**Regola:** le chiavi del browser NON sono fisse, contengono il percorso dell'admin: adm_tok:<percorso> e adm_repo:<percorso> (variabili K_TOK, K_REPO, SCOPE in admin.js). Ogni sito ha le sue. Il logout toglie solo il token di quel sito.
+**Campo repo precompilato:** se per questo sito non c'e' niente di salvato, il repo si ricava dall'indirizzo (utente.github.io/nome-repo/ diventa utente/nome-repo). Con dominio personalizzato o sito radice utente.github.io il campo resta vuoto e lo compila l'utente. Nessun nome di repo e' scritto nel codice.
+**Conseguenza per chi clona il sito:** dopo la copia bisogna cambiare SOLO baseurl in _config.yml; niente da toccare in admin/. Nota: chi aveva gia' fatto login con il vecchio formato (chiavi senza percorso) deve rifare il login una volta.
+
 ## 1. Progetto
 - Repo: `cialdecompatibili-netizen/alfolioadmin` (branch `main`), sito: https://cialdecompatibili-netizen.github.io/alfolioadmin/ (clonato da crazyweb3, che resta il repo di sviluppo originale)
 - Base: al-folio **v1.x VERGINE** (alshedivat), tema = gem `al_folio_core` (NON e' in repo: niente _layouts/_sass).
