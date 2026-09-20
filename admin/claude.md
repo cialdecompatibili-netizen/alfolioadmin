@@ -126,6 +126,15 @@ Sessione 2026-09-20. Due siti GitHub Pages dello stesso utente (utente.github.io
 **Campo repo precompilato:** se per questo sito non c'e' niente di salvato, il repo si ricava dall'indirizzo (utente.github.io/nome-repo/ diventa utente/nome-repo). Con dominio personalizzato o sito radice utente.github.io il campo resta vuoto e lo compila l'utente. Nessun nome di repo e' scritto nel codice.
 **Conseguenza per chi clona il sito:** dopo la copia bisogna cambiare SOLO baseurl in _config.yml; niente da toccare in admin/. Nota: chi aveva gia' fatto login con il vecchio formato (chiavi senza percorso) deve rifare il login una volta.
 
+
+### 0g. PALLINO DEPLOY: come intercettare davvero la pubblicazione (bug che non e' mai stato risolto fino al 2026-09-20)
+**Sintomo:** il pallino in alto a destra restava su 'Deploy in corso' / 'Pubblicazione...' e non diventava mai verde, anche a sito gia' online.
+**Causa vera:** la pubblicazione e' fatta dal workflow di sistema 'pages build and deployment', che gira sul branch **gh-pages**, mentre 'Deploy site' gira su **main**. Il vecchio codice chiedeva le run con il filtro branch=main, quindi la seconda run non veniva MAI trovata. I due fix precedenti (formato date, per_page) non c'entravano.
+**Metodo corretto (doc ufficiale GitHub REST, 'Get latest Pages build'):** GET /repos/{o}/{r}/pages/builds/latest restituisce status (queued, building, built, errored), commit (SHA di gh-pages pubblicato) ed error.message. Non dipende dal nome ne' dal branch di nessun workflow.
+**Come funziona pollDeploy (admin.js):** (1) memorizza il commit della build Pages attuale come base; (2) trova la run 'Deploy site' dal head_sha del commit appena creato (niente confronti tra orologi); (3) e' verde solo quando la build Pages ha un commit DIVERSO dalla base e status built; errored o build fallita = rosso; oltre ~6 minuti = grigio 'Controlla su GitHub', mai verde falso; se nessuna run parte entro 40 secondi = 'Nessun deploy necessario' (salvataggio che non tocca file monitorati da deploy.yml).
+**Verificato dal vivo** con un salvataggio reale: Deploy site ~105s, poi Pages building, poi built dopo ~147s totali; il commit della build Pages cambiava esattamente al passaggio a 'building'. Sequenza simulata anche con 7 scenari (riuscito, build fallita, pubblicazione fallita, nessun deploy, primo deploy con 404, pubblicazione vecchia ignorata).
+**Regola per il futuro:** non riconoscere mai un deploy dal NOME di un workflow di sistema o dal branch: usare l'API dello stato Pages. Un sito che non e' mai stato pubblicato risponde 404 su /pages/builds/latest, va gestito come 'nessun deploy'.
+
 ## 1. Progetto
 - Repo: `cialdecompatibili-netizen/alfolioadmin` (branch `main`), sito: https://cialdecompatibili-netizen.github.io/alfolioadmin/ (clonato da crazyweb3, che resta il repo di sviluppo originale)
 - Base: al-folio **v1.x VERGINE** (alshedivat), tema = gem `al_folio_core` (NON e' in repo: niente _layouts/_sass).
@@ -137,7 +146,7 @@ Sessione 2026-09-20. Due siti GitHub Pages dello stesso utente (utente.github.io
 - Pages: `build_type: legacy`, source `gh-pages`, path `/`. (Con `workflow` si ha 404.)
 - `deploy.yml` parte solo se il push tocca: `assets/**`, `*.bib`, `*.html`, `*.js`, `*.liquid`, `**/*.md`, `**.yml`, Gemfile. Un push solo di `.css`/`.scss`/`.json` NON deploya.
 - Build ~1-2 min + propagazione Pages. Dopo: ricarica forzata (Ctrl+F5).
-- Verifica deploy: API `GET /repos/{o}/{r}/actions/runs` (workflow "Deploy site" -> conclusion success) poi "pages build and deployment".
+- Verifica deploy: API `GET /repos/{o}/{r}/pages/builds/latest` (status built + commit diverso dalla build precedente). NON usare /actions/runs?branch=main per la pubblicazione: vedi sez. 0g.
 - Token per API da script: sta nel remote git di `C:\Users\mirco\Desktop\crazyweb\` (`git remote get-url origin`). Il remote di questo repo NON lo ha.
 - `admin/claude.md` viene pubblicato online (ok, non contiene segreti). Per nasconderlo aggiungi `admin/claude.md` a `exclude:` di `_config.yml`.
 
